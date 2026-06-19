@@ -1,7 +1,107 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    background: "#6b21a8",
+    padding: "40px 16px",
+    fontFamily: "sans-serif",
+  },
+  banner: {
+    color: "#fff",
+    fontSize: "24px",
+    fontWeight: "bold",
+    marginBottom: "4px",
+  },
+  subtext: {
+    color: "#e9d5ff",
+    fontSize: "12px",
+    marginBottom: "24px",
+  },
+  container: {
+    width: 350,
+    height: 630,
+    background: "#fff",
+    borderRadius: 12,
+    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+  },
+  header: {
+    background: "#000",
+    color: "#fff",
+    padding: 12,
+    fontSize: 11,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
+    paddingRight: 40,
+  },
+  refreshBtn: {
+    position: "absolute",
+    right: 12,
+    background: "transparent",
+    border: "1px solid #fff",
+    color: "#fff",
+    padding: "4px 8px",
+    fontSize: 9,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    cursor: "pointer",
+    borderRadius: 4,
+  },
+  tabBar: {
+    display: "flex",
+    background: "#fff",
+    borderBottom: "1px solid #eee",
+  },
+  tabBtn: (active) => ({
+    flex: 1,
+    padding: "12px 2px",
+    border: "none",
+    background: "none",
+    fontSize: 10,
+    fontWeight: "bold",
+    color: active ? "#000" : "#999",
+    textTransform: "uppercase",
+    cursor: "pointer",
+    borderBottom: active ? "2px solid #000" : "2px solid transparent",
+  }),
+  content: {
+    flex: 1,
+    background: "#fff",
+    overflow: "hidden",
+  },
+  hero: {
+    height: "100%",
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  iframe: {
+    width: "100%",
+    height: "100%",
+    border: "none",
+    display: "block",
+  },
+};
 
 export default function NicoletteReact() {
   const [activeTab, setActiveTab] = useState("f");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const tabs = [
     { id: "f", label: "1.WF Choice" },
@@ -16,59 +116,65 @@ export default function NicoletteReact() {
     p: "https://cs-crossproject-test.preview.softr.app/nicolette-v2-jobseeker-run-log-pub?autoUser=true&show-toolbar=true&device=mobile",
   };
 
-  const refreshAll = () => {
-    setActiveTab((t) => t); // simple re-render trick; real iframe refresh handled by key prop below
-    setRefreshKey((k) => k + 1);
-  };
+  // Load the Fillout embed script once, when tab "f" is shown
+  useEffect(() => {
+    if (activeTab === "f" && !document.getElementById("fillout-script")) {
+      const script = document.createElement("script");
+      script.id = "fillout-script";
+      script.src = "https://server.fillout.com/embed/v1/";
+      document.body.appendChild(script);
+    }
+  }, [activeTab]);
 
-  const [refreshKey, setRefreshKey] = useState(0);
+  const refreshAll = () => setRefreshKey((k) => k + 1);
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-purple-700 py-10 px-4">
-      <h1 className="text-white text-2xl font-bold mb-1 tracking-wide">⚛ REACT VERSION</h1>
-      <p className="text-purple-200 text-xs mb-6">Same widget, rebuilt as a React component</p>
+    <div style={styles.page}>
+      <div style={styles.banner}>⚛ REACT VERSION</div>
+      <div style={styles.subtext}>Same widget, rebuilt as a React component</div>
 
-      <div className="w-[350px] h-[630px] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden">
-        <div className="bg-black text-white px-3 py-3 text-[11px] font-bold uppercase tracking-wide flex items-center justify-center relative">
-          <span className="flex-1 text-center pr-10">Nicolette Almeida, reporting for duty, in high heels</span>
-          <button
-            onClick={refreshAll}
-            className="absolute right-3 border border-white text-white text-[9px] font-bold uppercase px-2 py-1 rounded hover:bg-white hover:text-black transition"
-          >
-            ↻ Refresh
-          </button>
+      <div style={styles.container}>
+        <div style={styles.header}>
+          <span style={styles.headerTitle}>Nicolette Almeida, reporting for duty, in high heels</span>
+          <button style={styles.refreshBtn} onClick={refreshAll}>↻ Refresh</button>
         </div>
 
-        <div className="flex bg-white border-b border-gray-100">
+        <div style={styles.tabBar}>
           {tabs.map((t) => (
             <button
               key={t.id}
+              style={styles.tabBtn(activeTab === t.id)}
               onClick={() => setActiveTab(t.id)}
-              className={`flex-1 py-3 px-0.5 text-[10px] font-bold uppercase ${
-                activeTab === t.id ? "text-black border-b-2 border-black" : "text-gray-400"
-              }`}
             >
               {t.label}
             </button>
           ))}
         </div>
 
-        <div className="flex-1 bg-white overflow-hidden relative">
+        <div style={styles.content}>
           {activeTab === "f" && (
-            <div className="h-full w-full flex items-center justify-center bg-gradient-to-b from-black/40 to-black/40 bg-purple-300">
-              <div className="text-center text-white px-4">
-                <p className="text-sm font-semibold mb-2">Fillout form embed</p>
-                <p className="text-xs opacity-80">(placeholder — real embed script would load here)</p>
-              </div>
+            <div style={styles.hero}>
+              <div
+                data-fillout-id="1jHT5qfyL3us"
+                data-fillout-embed-type="popup"
+                data-fillout-button-text="Nicolette is longing for your touch V2"
+                data-fillout-dynamic-resize
+                data-fillout-button-color="#B69099"
+                data-fillout-button-size="medium"
+                data-fillout-inherit-parameters
+                data-fillout-popup-size="medium"
+              />
             </div>
           )}
           {activeTab !== "f" && (
-            <iframe
-              key={activeTab + refreshKey}
-              src={iframeSrc[activeTab]}
-              className="w-full h-full border-0 block"
-              title={activeTab}
-            />
+            <div style={styles.hero}>
+              <iframe
+                key={activeTab + refreshKey}
+                src={iframeSrc[activeTab]}
+                style={styles.iframe}
+                title={activeTab}
+              />
+            </div>
           )}
         </div>
       </div>
